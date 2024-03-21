@@ -1,6 +1,7 @@
 package com.devsuperior.movieflix.services;
 
 import java.util.Arrays;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,13 +18,16 @@ import com.devsuperior.movieflix.entities.Movie;
 import com.devsuperior.movieflix.projections.MovieProjection;
 import com.devsuperior.movieflix.repositories.MovieRepository;
 import com.devsuperior.movieflix.services.exceptions.ResourceNotFoundException;
+import com.devsuperior.movieflix.util.Utils;
 
 @Service
 public class MovieService {
 	
 	@Autowired
 	private MovieRepository repository;
+	
 
+	@SuppressWarnings("unchecked")
 	@Transactional(readOnly = true)
 	public Page<MovieCardDTO> findAllPaged(String genreId, Pageable pageable) {
 		
@@ -36,6 +40,8 @@ public class MovieService {
 		List<Long> movieIds = page.map(x -> x.getId()).toList();
 		
 		List<Movie> entities = repository.searchMoviesWithGenres(movieIds);
+		entities = (List<Movie>)Utils.replace(page.getContent(), entities);
+		
 		List<MovieCardDTO> dtos = entities.stream().map(x -> new MovieCardDTO(x)).toList();
 		Page<MovieCardDTO> pageDto = new PageImpl<>(dtos, page.getPageable(), page.getTotalElements());
 		return pageDto;
@@ -49,5 +55,4 @@ public class MovieService {
 		return new MovieDetailsDTO(entity);
 	}
 	
-
 }
